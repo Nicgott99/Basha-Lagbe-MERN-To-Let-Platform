@@ -32,7 +32,7 @@ export default function Listing() {
     const fetchListing = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/listing/get/${params.listingId}`);
+        const res = await fetch(`/server/listing/get/${params.listingId}`);
         const data = await res.json();
         if (data.success === false) {
           setError(true);
@@ -42,6 +42,7 @@ export default function Listing() {
         setListing(data);
         setLoading(false);
         setError(false);
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
         setError(true);
         setLoading(false);
