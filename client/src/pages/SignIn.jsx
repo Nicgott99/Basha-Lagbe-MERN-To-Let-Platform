@@ -24,11 +24,7 @@ export default function SignIn() {
     e.preventDefault();
     try {
       dispactch(signInStart());
-<<<<<<< HEAD
-      const res = await fetch("/api/auth/signin", {
-=======
       const res = await fetch("/server/auth/signin", {
->>>>>>> 7a3e0a91d270d9870267c121103dd8c6c34af888
         method: "POST",
         headers: {
           "Content-Type": "application/json",
