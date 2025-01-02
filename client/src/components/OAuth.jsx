@@ -13,6 +13,7 @@ export default function OAuth() {
   const handleGoogleClick = async () => {
     try {
       const provider = new GoogleAuthProvider()
+      // eslint-disable-next-line no-undef
       const auth = getAuth(app)
 
       const result = await signInWithPopup(auth, provider)
