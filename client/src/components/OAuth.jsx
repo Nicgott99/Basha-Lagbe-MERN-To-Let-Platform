@@ -1,7 +1,7 @@
 import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth'
-import { app } from '../firebase';
+
 import { useDispatch } from 'react-redux';
-import { signInSuccess } from '../redux/user/userSlice';
+import { signInSuccess } from '../redux/users/userSlice';
 import { useNavigate } from 'react-router';
 
 
@@ -13,6 +13,7 @@ export default function OAuth() {
   const handleGoogleClick = async () => {
     try {
       const provider = new GoogleAuthProvider()
+      // eslint-disable-next-line no-undef
       const auth = getAuth(app)
 
       const result = await signInWithPopup(auth, provider)
@@ -41,17 +42,11 @@ export default function OAuth() {
 
   return (
     <button
-      onClick={handleGoogleClick}
-      type="button"
-      className="
-        bg-red-700 
-        text-white 
-        p-3 
-        rounded-lg 
-        uppercase 
-        hover:opacity-50"
-    >
-      Continue with google
+    onClick={handleGoogleClick}
+    type='button'
+    className='bg-red-700 text-white p-3 rounded-lg uppercase hover:opacity-95'
+  >
+    SignIn with google
     </button>
   )
 }
