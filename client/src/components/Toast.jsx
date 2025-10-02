@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext } from 'react';
+import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircleIcon,
@@ -67,12 +68,24 @@ const Toast = ({ toast, onRemove }) => {
   );
 };
 
+Toast.propTypes = {
+  toast: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    message: PropTypes.string.isRequired,
+    type: PropTypes.oneOf(['success', 'error', 'warning', 'info']).isRequired,
+    duration: PropTypes.number.isRequired,
+  }).isRequired,
+  onRemove: PropTypes.func.isRequired,
+};
+
 // Toast Provider component
 function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const [counter, setCounter] = useState(0);
 
   const addToast = (message, type = 'info', duration = 5000) => {
-    const id = Date.now().toString();
+    const id = `${Date.now()}-${counter}`;
+    setCounter(prev => prev + 1);
     setToasts((prevToasts) => [...prevToasts, { id, message, type, duration }]);
     return id;
   };
@@ -107,5 +120,9 @@ function ToastProvider({ children }) {
     </ToastContext.Provider>
   );
 }
+
+ToastProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export default ToastProvider;

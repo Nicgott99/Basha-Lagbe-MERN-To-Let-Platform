@@ -58,7 +58,7 @@ const propertySchema = new mongoose.Schema({
   location: {
     coordinates: {
       type: { type: String, enum: ['Point'], default: 'Point' },
-      coordinates: { type: [Number], index: '2dsphere' }
+      coordinates: { type: [Number], index: '2dsphere', default: [0, 0] }  // Default to [0, 0] to prevent GeoJSON errors
     },
     address: {
       street: { type: String, required: true },

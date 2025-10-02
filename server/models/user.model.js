@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   profileCompleted: { type: Boolean, default: false },
   
+  // OAuth Fields
+  isGoogleAccount: { type: Boolean, default: false },
+  isGitHubAccount: { type: Boolean, default: false },
+  
   // Password Reset Fields
   passwordResetToken: { type: String, default: null },
   passwordResetExpires: { type: Date, default: null },
@@ -25,7 +29,10 @@ const userSchema = new mongoose.Schema({
   // Profile Stats
   totalListings: { type: Number, default: 0 },
   averageRating: { type: Number, default: 0, min: 0, max: 5 },
-  totalReviews: { type: Number, default: 0 }
+  totalReviews: { type: Number, default: 0 },
+  
+  // Favorites
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Property', default: [] }]
 }, {
   timestamps: true
 });
@@ -59,4 +66,4 @@ userSchema.methods.resetLoginAttempts = function() {
   });
 };
 
-export default mongoose.model('User', userSchema);
+export default mongoose.models.User || mongoose.model('User', userSchema);

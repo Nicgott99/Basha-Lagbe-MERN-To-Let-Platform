@@ -2,37 +2,32 @@ import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import PropTypes from 'prop-types';
 import apiService from '../utils/apiService';
 import {
   HomeIcon,
   UserGroupIcon,
   ChartBarIcon,
-  CogIcon,
   BellIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
   EyeIcon,
   TrashIcon,
-  PencilIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  CalendarIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import {
   HomeIcon as HomeSolid,
-  UserGroupIcon as UserGroupSolid,
-  ChartBarIcon as ChartBarSolid
+  UserGroupIcon as UserGroupSolid
 } from '@heroicons/react/24/solid';
 
 const AdminPanel = () => {
   const { currentUser } = useSelector(state => state.user);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [properties, setProperties] = useState([]);
-  const [users, setUsers] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,14 +50,15 @@ const AdminPanel = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // Check if user is admin
-  if (!currentUser || currentUser.email !== 'hasibullah.khan.alvie@g.bracu.ac.bd') {
-    return <Navigate to="/sign-in" />;
-  }
-
+  // Setup effect hook before any conditional returns
   useEffect(() => {
     fetchAdminData();
   }, []);
+
+  // Check if user is admin (after hooks)
+  if (!currentUser || currentUser.email !== 'hasibullah.khan.alvie@g.bracu.ac.bd') {
+    return <Navigate to="/sign-in" />;
+  }
 
   const fetchAdminData = async () => {
     setLoading(true);
@@ -78,11 +74,26 @@ const AdminPanel = () => {
       // Fetch properties with fallback
       let allProps = [];
       if (propertiesRes.ok) {
-        allProps = await propertiesRes.json();
+        const propsData = await propertiesRes.json();
+        // Extract properties array from response object
+        if (Array.isArray(propsData)) {
+          allProps = propsData;
+        } else if (propsData.properties && Array.isArray(propsData.properties)) {
+          allProps = propsData.properties;
+        } else if (propsData.data && Array.isArray(propsData.data)) {
+          allProps = propsData.data;
+        }
       } else {
         const fallbackRes = await fetch('/server/listing/search');
         if (fallbackRes.ok) {
-          allProps = await fallbackRes.json();
+          const fallbackData = await fallbackRes.json();
+          if (Array.isArray(fallbackData)) {
+            allProps = fallbackData;
+          } else if (fallbackData.properties && Array.isArray(fallbackData.properties)) {
+            allProps = fallbackData.properties;
+          } else if (fallbackData.data && Array.isArray(fallbackData.data)) {
+            allProps = fallbackData.data;
+          }
         }
       }
       setProperties(allProps);
@@ -90,9 +101,16 @@ const AdminPanel = () => {
       // Fetch users with fallback
       let allUsers = [];
       if (usersRes.ok) {
-        allUsers = await usersRes.json();
+        const usersData = await usersRes.json();
+        // Extract users array from response object
+        if (Array.isArray(usersData)) {
+          allUsers = usersData;
+        } else if (usersData.users && Array.isArray(usersData.users)) {
+          allUsers = usersData.users;
+        } else if (usersData.data && Array.isArray(usersData.data)) {
+          allUsers = usersData.data;
+        }
       }
-      setUsers(allUsers);
 
       // Calculate comprehensive stats
       const pendingCount = allProps.filter(p => 
@@ -280,6 +298,15 @@ const AdminPanel = () => {
     </motion.div>
   );
 
+  StatCard.propTypes = {
+    title: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    icon: PropTypes.node.isRequired,
+    color: PropTypes.string.isRequired,
+    trend: PropTypes.string,
+    trendValue: PropTypes.number
+  };
+
   const PropertyModal = ({ property, onClose }) => (
     <AnimatePresence>
       {property && (
@@ -418,6 +445,11 @@ const AdminPanel = () => {
       )}
     </AnimatePresence>
   );
+
+  PropertyModal.propTypes = {
+    property: PropTypes.object,
+    onClose: PropTypes.func.isRequired
+  };
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -912,7 +944,7 @@ const AdminPanel = () => {
                 <ExclamationTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Property</h3>
                 <p className="text-gray-600 mb-6">
-                  Are you sure you want to delete "{deleteTarget?.title}"? This action cannot be undone.
+                  Are you sure you want to delete &ldquo;{deleteTarget?.title}&rdquo;? This action cannot be undone.
                 </p>
                 <div className="flex gap-3 justify-center">
                   <button

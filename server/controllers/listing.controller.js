@@ -3,18 +3,12 @@ import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
 import { sendPropertyApprovalEmail } from "../utils/emailService.js";
 import multer from "multer";
+import sharp from "sharp";
 import path from "path";
+import fs from "fs/promises";
 
-// Configure multer for image uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/properties/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configure multer for image uploads to memory storage (for Sharp processing)
+const storage = multer.memoryStorage(); // Store in memory for Sharp processing
 
 const upload = multer({ 
   storage: storage,
@@ -31,6 +25,43 @@ const upload = multer({
     }
   }
 }).array('images', 10);
+
+// Image processing function using Sharp
+const processImage = async (buffer, filename, outputPath) => {
+  try {
+    // Ensure output directory exists
+    await fs.mkdir(outputPath, { recursive: true });
+
+    const outputFile = path.join(outputPath, filename);
+
+    // Process image: resize, optimize, convert to WebP
+    await sharp(buffer)
+      .resize(1200, 800, {
+        fit: 'inside',
+        withoutEnlargement: true
+      })
+      .webp({ quality: 85 })
+      .toFile(outputFile);
+
+    // Generate thumbnail
+    const thumbnailFile = path.join(outputPath, `thumb_${filename}`);
+    await sharp(buffer)
+      .resize(400, 300, {
+        fit: 'cover',
+        position: 'center'
+      })
+      .webp({ quality: 80 })
+      .toFile(thumbnailFile);
+
+    return {
+      filename: path.basename(outputFile),
+      thumbnail: path.basename(thumbnailFile)
+    };
+  } catch (error) {
+    console.error('Image processing error:', error);
+    throw new Error('Failed to process image');
+  }
+};
 
 // Create Property
 export const createProperty = async (req, res, next) => {
@@ -100,10 +131,30 @@ export const createProperty = async (req, res, next) => {
         return next(errorHandler(400, "Please provide complete location details"));
       }
 
-      // Process uploaded files
+      // Process uploaded files with Sharp
       let finalImageUrls = [];
       if (req.files && req.files.length > 0) {
-        finalImageUrls = req.files.map(file => `/uploads/properties/${file.filename}`);
+        console.log('📷 Processing', req.files.length, 'images with Sharp...');
+        const processedImages = await Promise.all(
+          req.files.map(async (file, index) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const filename = `property-${uniqueSuffix}-${index}.webp`;
+            
+            const result = await processImage(
+              file.buffer,
+              filename,
+              'uploads/properties/'
+            );
+            
+            return {
+              url: `/uploads/properties/${result.filename}`,
+              thumbnail: `/uploads/properties/${result.thumbnail}`,
+              isPrimary: index === 0
+            };
+          })
+        );
+        finalImageUrls = processedImages.map(img => img.url);
+        console.log('✅ Images processed and optimized with Sharp');
       } else if (imageUrls && imageUrls.length > 0) {
         // Handle URLs from frontend
         finalImageUrls = Array.isArray(imageUrls) ? imageUrls : [imageUrls];

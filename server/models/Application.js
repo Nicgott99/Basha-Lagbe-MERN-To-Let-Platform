@@ -18,18 +18,18 @@ const applicationSchema = new mongoose.Schema({
     fullName: { type: String, required: true },
     phone: { type: String, required: true },
     email: { type: String, required: true },
-    dateOfBirth: { type: Date, required: true },
-    nationalId: { type: String, required: true },
-    occupation: { type: String, required: true },
-    monthlyIncome: { type: Number, required: true },
-    employer: { type: String, required: true }
+    dateOfBirth: { type: Date },
+    nationalId: { type: String },
+    occupation: { type: String },
+    monthlyIncome: { type: Number },
+    employer: { type: String }
   },
   rentalHistory: {
-    currentAddress: { type: String, required: true },
+    currentAddress: { type: String },
     landlordName: String,
     landlordContact: String,
     monthlyRent: Number,
-    reasonForMoving: { type: String, required: true }
+    reasonForMoving: { type: String }
   },
   references: [{
     name: { type: String, required: true },
@@ -38,8 +38,8 @@ const applicationSchema = new mongoose.Schema({
     email: String
   }],
   preferences: {
-    moveInDate: { type: Date, required: true },
-    leaseDuration: { type: String, required: true },
+    moveInDate: { type: Date },
+    leaseDuration: { type: String },
     pets: { type: Boolean, default: false },
     petDetails: String,
     smoking: { type: Boolean, default: false },
