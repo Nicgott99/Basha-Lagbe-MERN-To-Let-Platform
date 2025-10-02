@@ -1,11 +1,33 @@
 import express from 'express';
-import { google, signin, signout, signup } from '../controllers/auth.controller.js';
+import { 
+  signup, 
+  signin, 
+  completeSignin,
+  completeSignup,
+  google, 
+  signOut, 
+  sendVerificationCode, 
+  verifyEmailCode,
+  forgotPassword,
+  resetPassword,
+  verifyToken,
+  checkUser
+} from '../controllers/auth.controller.js';
 
 const router = express.Router();
 
-router.post('/signup', signup)
-router.post('/signin', signin)
-router.post('/google', google)
-router.get('/signout', signout)
+router.post('/check-user', checkUser);
+router.post('/signup', signup);
+router.post('/complete-signup', completeSignup);
+router.post('/signin', signin);
+router.post('/complete-signin', completeSignin);
+router.post('/google', google);
+router.get('/signout', signOut);
+router.post('/signout', signOut); // Support both GET and POST for signout
+router.post('/send-verification', sendVerificationCode);
+router.post('/verify-email', verifyEmailCode);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
+router.get('/verify', verifyToken);
 
 export default router;

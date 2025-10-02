@@ -1,13 +1,27 @@
 import express from "express";
-import { createListing, deleteListing, updateListing, getListing, getListings } from "../controllers/listing.controller.js";
-import { verifyToken } from "../utils/verifyUser.js";
+import { 
+    createListing, 
+    getListing, 
+    getListings,
+    getPendingListings,
+    approveListing,
+    rejectListing
+} from "../controllers/listing.controller.js";
+import { verifyToken, verifyAdmin } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
-router.post('/create', verifyToken, createListing)
-router.delete('/delete/:id', verifyToken, deleteListing)
-router.put('/update/:id', verifyToken, updateListing)
-router.get('/get/:id',  getListing)
-router.get('/get', getListings)
+// User routes
+router.post('/create', verifyToken, createListing);
+
+// Public routes
+router.get('/get/:id', getListing);
+router.get('/get', getListings);
+router.get('/all', getListings); // Add route for getting all listings
+
+// Admin routes
+router.get('/admin/pending', verifyToken, verifyAdmin, getPendingListings);
+router.post('/admin/approve/:id', verifyToken, verifyAdmin, approveListing);
+router.post('/admin/reject/:id', verifyToken, verifyAdmin, rejectListing);
 
 export default router;
