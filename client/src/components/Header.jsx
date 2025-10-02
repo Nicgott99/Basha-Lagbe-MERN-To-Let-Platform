@@ -6,7 +6,7 @@ import { useToast } from '../hooks/useToast';
 import apiService from '../utils/apiService';
 
 export default function Header() {
-  const { currentUser, loading } = useSelector(state => state.user);
+  const { currentUser } = useSelector(state => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showDropdown, setShowDropdown] = useState(false);
@@ -64,7 +64,8 @@ export default function Header() {
           <Link to="/about" className="text-white hover:text-yellow-400 transition duration-300 font-medium">
             About
           </Link>
-          {currentUser && (
+          {currentUser && (currentUser.accountType === 'landlord' || currentUser.accountType === 'agent' || 
+           currentUser.accountType === 'admin' || currentUser.role === 'admin') && (
             <Link to="/add-property" className="text-white hover:text-yellow-400 transition duration-300 font-medium">
               List Property
             </Link>
@@ -134,27 +135,39 @@ export default function Header() {
                     >
                       Notifications
                     </Link>
-                    <Link
-                      to="/inquiries"
-                      className="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition duration-300"
-                      onClick={() => setShowDropdown(false)}
-                    >
-                      Inquiries
-                    </Link>
-                    <Link
-                      to="/applications"
-                      className="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition duration-300"
-                      onClick={() => setShowDropdown(false)}
-                    >
-                      Applications
-                    </Link>
-                    <Link
-                      to="/add-property"
-                      className="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition duration-300"
-                      onClick={() => setShowDropdown(false)}
-                    >
-                      Add Property
-                    </Link>
+                    
+                    {/* Show Inquiries and Applications only for landlords/agents, not regular tenants */}
+                    {(currentUser.accountType === 'landlord' || currentUser.accountType === 'agent' || 
+                      currentUser.accountType === 'admin' || currentUser.role === 'admin') && (
+                      <>
+                        <Link
+                          to="/inquiries"
+                          className="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition duration-300"
+                          onClick={() => setShowDropdown(false)}
+                        >
+                          Inquiries
+                        </Link>
+                        <Link
+                          to="/applications"
+                          className="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition duration-300"
+                          onClick={() => setShowDropdown(false)}
+                        >
+                          Applications
+                        </Link>
+                      </>
+                    )}
+                    
+                    {/* Show Add Property for landlords/agents only */}
+                    {(currentUser.accountType === 'landlord' || currentUser.accountType === 'agent' || 
+                      currentUser.accountType === 'admin' || currentUser.role === 'admin') && (
+                      <Link
+                        to="/add-property"
+                        className="block px-4 py-2 text-gray-800 hover:bg-blue-50 transition duration-300"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        Add Property
+                      </Link>
+                    )}
                     {(currentUser.accountType === 'admin' || currentUser.role === 'admin') && (
                       <Link
                         to="/admin"

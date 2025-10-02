@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import PropTypes from 'prop-types';
 import apiService from '../utils/apiService';
 import {
   MagnifyingGlassIcon,
-  AdjustmentsHorizontalIcon,
   MapPinIcon,
   HomeIcon,
   HeartIcon,
@@ -115,7 +115,7 @@ const Search = () => {
     }
   };
 
-  const applyFilters = (propertiesToFilter = properties) => {
+  const applyFilters = useCallback((propertiesToFilter = properties) => {
     let filtered = [...propertiesToFilter];
 
     if (searchQuery.trim()) {
@@ -163,11 +163,11 @@ const Search = () => {
     }
 
     setFilteredProperties(filtered);
-  };
+  }, [properties, searchQuery, filters]);
 
   useEffect(() => {
     applyFilters();
-  }, [filters, searchQuery, properties]);
+  }, [filters, searchQuery, properties, applyFilters]);
 
   const handleSortChange = (newSortBy) => {
     setSortBy(newSortBy);
@@ -375,6 +375,28 @@ const Search = () => {
       </div>
     </motion.div>
   );
+
+  PropertyCard.propTypes = {
+    property: PropTypes.shape({
+      _id: PropTypes.string,
+      imageUrls: PropTypes.arrayOf(PropTypes.string),
+      title: PropTypes.string,
+      propertyType: PropTypes.string,
+      rentPrice: PropTypes.number,
+      location: PropTypes.shape({
+        area: PropTypes.string,
+        district: PropTypes.string
+      }),
+      description: PropTypes.string,
+      bedrooms: PropTypes.number,
+      bathrooms: PropTypes.number,
+      area: PropTypes.number,
+      amenities: PropTypes.arrayOf(PropTypes.string),
+      landlord: PropTypes.shape({
+        fullName: PropTypes.string
+      })
+    }).isRequired
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">

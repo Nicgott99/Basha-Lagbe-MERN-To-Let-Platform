@@ -16,7 +16,7 @@ const __dirname = path.resolve();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true
 }));
 
@@ -30,14 +30,40 @@ app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log('✅ MongoDB connected successfully.'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+// MongoDB Connection with Stable API version
+const mongoOptions = {
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  serverApi: {
+    version: '1',
+    strict: true,
+    deprecationErrors: true,
+  }
+};
+
+mongoose.connect(process.env.MONGO_URL, mongoOptions)
+  .then(() => {
+    console.log('✅ MongoDB connected successfully.');
+    console.log(`📊 Database: ${mongoose.connection.name}`);
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err.message);
+    console.log('⚠️  Server running but database unavailable');
+  });
 
 // Test endpoint
 app.get('/server/test', (req, res) => {
   res.json({ message: 'Backend is working!', timestamp: new Date().toISOString() });
+});
+
+// Health check endpoint
+app.get('/server/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 // API Routes
@@ -52,12 +78,16 @@ import applicationRoutes from './routes/applicationRoutes.js';
 import inquiryRoutes from './routes/inquiryRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import statsRoutes from './routes/statsRoutes.js';
+import favoriteRoutes from './routes/favoriteRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 
 app.use('/server/admin', adminRoutes);
 app.use('/server/applications', applicationRoutes);
 app.use('/server/inquiries', inquiryRoutes);
 app.use('/server/notifications', notificationRoutes);
 app.use('/server/stats', statsRoutes);
+app.use('/server/favorites', favoriteRoutes);
+app.use('/server/messages', messageRoutes);
 
 // Serve static files for production
 app.use(express.static(path.join(__dirname, '/client/dist')));

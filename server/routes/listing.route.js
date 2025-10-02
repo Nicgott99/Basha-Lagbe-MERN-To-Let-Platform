@@ -18,6 +18,7 @@ router.post('/create', verifyToken, createListing);
 router.get('/get/:id', getListing);
 router.get('/get', getListings);
 router.get('/all', getListings); // Add route for getting all listings
+router.get('/search', getListings); // Add search route (uses same controller with query params)
 
 // Admin routes
 router.get('/admin/pending', verifyToken, verifyAdmin, getPendingListings);

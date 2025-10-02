@@ -344,6 +344,23 @@ class ApiService {
     },
 
     /**
+     * Moderate property (approve or reject)
+     */
+    moderateProperty: async (propertyId, action, rejectionReason = null) => {
+      return this.request(`/server/admin/properties/${propertyId}/moderate`, {
+        method: 'POST',
+        body: JSON.stringify({ action, rejectionReason }),
+      });
+    },
+
+    /**
+     * Get pending properties for moderation
+     */
+    getPendingProperties: async () => {
+      return this.request('/server/admin/properties/pending');
+    },
+
+    /**
      * Get system logs
      */
     getLogs: async (filters = {}) => {
@@ -620,7 +637,7 @@ class ApiService {
      */
     uploadImages: async (propertyId, files) => {
       const formData = new FormData();
-      files.forEach((file, index) => {
+      files.forEach((file) => {
         formData.append('images', file);
       });
       
@@ -797,6 +814,118 @@ class ApiService {
         method: 'POST',
         body: JSON.stringify({ participants: participantIds, propertyId }),
       });
+    },
+  };
+
+  // ==================== FAVORITES METHODS ====================
+  
+  favorites = {
+    /**
+     * Add property to favorites
+     */
+    addFavorite: async (propertyId) => {
+      return this.request(`/server/favorites/add/${propertyId}`, {
+        method: 'POST',
+      });
+    },
+
+    /**
+     * Remove property from favorites
+     */
+    removeFavorite: async (propertyId) => {
+      return this.request(`/server/favorites/remove/${propertyId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    /**
+     * Get user's favorite properties
+     */
+    getFavorites: async (page = 1, limit = 10) => {
+      return this.request(`/server/favorites?page=${page}&limit=${limit}`);
+    },
+
+    /**
+     * Check if property is favorited
+     */
+    checkFavorite: async (propertyId) => {
+      return this.request(`/server/favorites/check/${propertyId}`);
+    },
+  };
+
+  // ==================== MESSAGING METHODS ====================
+
+  messages = {
+    /**
+     * Send a message to another user
+     */
+    sendMessage: async (messageData) => {
+      return this.request('/server/messages/send', {
+        method: 'POST',
+        body: JSON.stringify(messageData),
+      });
+    },
+
+    /**
+     * Get conversation with a specific user
+     */
+    getConversation: async (userId, options = {}) => {
+      const { page = 1, limit = 50, propertyId } = options;
+      const params = new URLSearchParams({ page, limit });
+      if (propertyId) params.append('propertyId', propertyId);
+      
+      return this.request(`/server/messages/conversation/${userId}?${params.toString()}`);
+    },
+
+    /**
+     * Get all conversations for current user
+     */
+    getConversations: async () => {
+      return this.request('/server/messages/conversations');
+    },
+
+    /**
+     * Mark message as read
+     */
+    markAsRead: async (messageId) => {
+      return this.request(`/server/messages/${messageId}/read`, {
+        method: 'PUT',
+      });
+    },
+
+    /**
+     * Mark all messages in conversation as read
+     */
+    markConversationAsRead: async (userId) => {
+      return this.request(`/server/messages/conversation/${userId}/read-all`, {
+        method: 'POST',
+      });
+    },
+
+    /**
+     * Edit a message
+     */
+    editMessage: async (messageId, content) => {
+      return this.request(`/server/messages/${messageId}/edit`, {
+        method: 'PUT',
+        body: JSON.stringify({ content }),
+      });
+    },
+
+    /**
+     * Delete a message
+     */
+    deleteMessage: async (messageId) => {
+      return this.request(`/server/messages/${messageId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    /**
+     * Get unread message count
+     */
+    getUnreadCount: async () => {
+      return this.request('/server/messages/unread/count');
     },
   };
 

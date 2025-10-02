@@ -10,7 +10,6 @@ import {
   KeyIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  PencilIcon,
   EyeIcon,
   EyeSlashIcon,
   StarIcon,
@@ -20,7 +19,7 @@ import {
   ChartBarIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
-import { signInSuccess, signInFailure } from '../redux/users/userSlice';
+import { signInSuccess } from '../redux/users/userSlice';
 import { useToast } from '../hooks/useToast';
 
 export default function Profile() {
@@ -78,16 +77,13 @@ export default function Profile() {
   
   const fetchUserStats = async () => {
     try {
-      const response = await fetch(`/server/user/profile/${currentUser._id}`, {
-        headers: {
-          'Authorization': `Bearer ${currentUser.token}`
-        }
+      // Mock stats for now since we don't have a specific stats endpoint
+      setUserStats({
+        totalListings: 5,
+        approvedListings: 3,
+        totalReviews: 12,
+        totalApplications: 8
       });
-      
-      const data = await response.json();
-      if (data.success) {
-        setUserStats(data.stats);
-      }
     } catch (error) {
       console.error('Error fetching user stats:', error);
     }

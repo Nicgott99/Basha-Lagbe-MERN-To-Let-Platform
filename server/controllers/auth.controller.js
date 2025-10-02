@@ -691,6 +691,95 @@ export const google = async (req, res, next) => {
   }
 };
 
+// GitHub OAuth
+export const github = async (req, res, next) => {
+  try {
+    const { email, name, photoURL, login } = req.body;
+
+    // Validate required fields
+    if (!email) {
+      return next(errorHandler(400, "Email is required for GitHub OAuth"));
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (user) {
+      // User exists, log them in
+      const token = jwt.sign(
+        { 
+          id: user._id, 
+          email: user.email, 
+          role: user.role 
+        }, 
+        process.env.JWT_SECRET || 'BashaLagbe2025SuperSecretKeyAdvancedSecurityProductionReady147258369',
+        { expiresIn: '7d' }
+      );
+
+      const { password, ...userWithoutPassword } = user._doc;
+
+      res
+        .cookie("access_token", token, { 
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        })
+        .status(200)
+        .json({
+          success: true,
+          message: "Signed in with GitHub successfully",
+          user: userWithoutPassword,
+          token
+        });
+    } else {
+      // Create new user
+      const generatePassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      const hashedPassword = bcryptjs.hashSync(generatePassword, 10);
+
+      const newUser = new User({
+        fullName: name || login || email.split('@')[0],
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        avatar: photoURL,
+        isGitHubAccount: true,
+        isEmailVerified: true, // GitHub emails are pre-verified
+      });
+
+      await newUser.save();
+
+      const token = jwt.sign(
+        { 
+          id: newUser._id, 
+          email: newUser.email, 
+          role: newUser.role 
+        }, 
+        process.env.JWT_SECRET || 'BashaLagbe2025SuperSecretKeyAdvancedSecurityProductionReady147258369',
+        { expiresIn: '7d' }
+      );
+
+      const { password, ...userWithoutPassword } = newUser._doc;
+      
+      res
+        .cookie("access_token", token, { 
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        })
+        .status(201)
+        .json({
+          success: true,
+          message: "Account created and signed in with GitHub successfully",
+          user: userWithoutPassword,
+          token
+        });
+    }
+  } catch (error) {
+    console.error("GitHub OAuth error:", error);
+    next(error);
+  }
+};
+
 // Check User (for signup validation)
 export const checkUser = async (req, res, next) => {
   try {
